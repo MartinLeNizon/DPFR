@@ -1,0 +1,55 @@
+# Data-Plane Fingerprinting Range (DPFR)
+
+The goal is to build an isolated, multi-Autonomous System (AS) cyber range. Within this range, corporate sites maintain encrypted tunnels. An adversarial AS will execute an active BGP prefix hijacking/interception attack. To detect this attack without relying on traditional BGP routers' control-plane data, you will implement an eBPF-based telemetry sensor that fingerprints physical path variations (such as TCP Round-Trip Time and IP Time-To-Live). A Go daemon will ingest this telemetry, detect the hijack, and execute an active defense response by rerouting traffic.
+
+# Milestone 1
+
+This configuration establishes a containerized, multi-AS virtual internet topology using Docker Compose and FRRouting (FRR) to simulate an enterprise core network, a remote branch, a legitimate transit ISP, and an adversarial network. By establishing authentic eBGP peerings over isolated Layer 2 subnets, it builds an operational data plane capable of exchanging traffic via deterministic, multi-hop AS paths, providing a clean baseline environment for analyzing BGP path routing variations.
+
+## Multi-Autonomous System (AS) Cyber Range
+
+* AS 100: Enterprise Main
+* AS 200: Remote Branch
+* AS 300: Transit ISP (Connecting Main and Branch)
+* AS 666: Rogue ISP
+
+| AS | Role                  | Configured Subnet(s)                     | Router ID  |
+|-------------------|-----------------------|------------------------------------------|------------|
+| AS 100 | Main | 192.168.10.0/24 (Internal), 10.100.30.0/24 (WAN to ISP), 10.166.60.0/24 (WAN to Rogue) | 1.1.1.1 |
+| AS 200 | Remote Branch | 192.168.20.0/24 (Internal), 10.200.30.0/24 (WAN to ISP) | 2.2.2.2 |
+| AS 300 | Transit ISP | 10.100.30.0/24, 10.200.30.0/24            | 3.3.3.3 |
+| AS 666 | Rogue ISP   | 10.166.60.0/24                            | 6.6.6.6 |
+
+## Usage
+
+1. Bring the Infrastructure Online: Deploy the network segments, initialize the routing nodes, and establish the eBGP handshakes
+
+```bash
+docker-compose up -d
+```
+
+2. Verify Control Plane Status: Ensure the Main Office has formed valid peering relationships with both providers and has integrated the path to the Remote Branch into its routing table
+
+```bash
+# Check that neighbor connections are established (look for integers under State/PfxRcd)
+docker exec -it router-main-as100 vtysh -c "show ip bgp summary"
+
+# Confirm the path to 192.168.20.0/24 resolves via the AS-Path: 300 200
+docker exec -it router-main-as100 vtysh -c "show ip bgp"
+```
+
+3. Verify Data Plane Transit: Validate end-to-end user data transit and map the baseline physical path hop count by sourcing traffic from the internal network interface
+
+```bash
+# Test connectivity across the backbone
+docker exec -it router-main-as100 ping -c 3 -I 192.168.10.1 192.168.20.1
+
+# Trace the route to verify traffic passes explicitly through Transit ISP (10.100.30.3)
+docker exec -it router-main-as100 traceroute -n -s 192.168.10.1 192.168.20.1
+```
+
+4. Shutdown the Infrastructure
+
+```bash
+docker-compose down
+```

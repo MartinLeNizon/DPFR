@@ -1,0 +1,60 @@
+version: '3.8'
+
+networks:
+  wan-main-transit:
+    ipam:
+      config:
+        - subnet: 10.100.30.0/24
+  wan-transit-branch:
+    ipam:
+      config:
+        - subnet: 10.200.30.0/24
+  wan-main-rogue:
+    ipam:
+      config:
+        - subnet: 10.166.60.0/24
+
+services:
+  router-main-as100:
+    image: frrouting/frr:v8.4.0
+    container_name: router-main-as100
+    volumes:
+      - ./config/main-as100:/etc/frr
+    networks:
+      wan-main-transit:
+        ipv4_address: 10.100.30.2
+      wan-main-rogue:
+        ipv4_address: 10.166.60.2
+    privileged: true
+
+  router-transit-as100:
+    image: frrouting/frr:v8.4.0
+    container_name: router-transit-as300
+    volumes:
+      - ./config/transit-as300:/etc/frr
+    networks:
+      wan-main-transit:
+        ipv4_address: 10.100.30.3
+      wan-transit-branch:
+        ipv4_address: 10.200.30.3
+    privileged: true
+
+  router-branch-as200:
+    image: frrouting/frr:v8.4.0
+    container_name: router-branch-as200
+    volumes:
+      - ./config/branch-as200:/etc/frr
+    networks:
+      wan-transit-branch:
+        ipv4_address: 10.200.30.2
+    privileged: true
+
+  router-rogue-as666:
+    image: frrouting/frr:v8.4.0
+    container_name: router-rogue-as666
+    volumes:
+      - ./config/rogue-as666:/etc/frr
+    networks:
+      wan-main-rogue:
+        ipv4_address: 10.166.60.66
+    privileged: true
