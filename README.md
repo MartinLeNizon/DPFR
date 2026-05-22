@@ -31,10 +31,15 @@ This configuration establishes a containerized, multi-AS virtual internet topolo
 (If using `podman`, run `systemctl --user enable --now podman.socket` so that `docker-compose` work)
 
 ```bash
+docker-compose build
 docker-compose up -d
 ```
 
-(If using `podman`, run `podman exec -it router-transit-as300 sysctl -w net.ipv4.ip_forward=1` )
+(If using `podman`, run: 
+```bash
+podman exec -it router-transit-as300 sysctl -w net.ipv4.ip_forward=1
+```
+)
 
 2. Verify Control Plane Status: Ensure the Main Office has formed valid peering relationships with both providers and has integrated the path to the Remote Branch into its routing table
 
@@ -61,3 +66,42 @@ docker exec -it router-main-as100 traceroute -n -s 192.168.10.1 192.168.20.1
 ```bash
 docker-compose down
 ```
+
+# Milestone 2
+
+```
++-----------------------------------------+
+                  |         [Production Lane] IKEv2 IPsec    |
+                  |     (Routed normally over Transit AS300) |
+                  +-----------------------------------------+
+                                    |
++----------------------+            v            +------------------------+
+|                      |=========================|                        |
+|  router-main-as100   |                         |  router-branch-as200   |
+|  (192.168.10.1)      |=========================|  (192.168.20.1)        |
++----------------------+            ^            +------------------------+
+                                    |
+                  +-----------------------------------------+
+                  |         [Remediation Lane] WireGuard     |
+                  |     (Dormant / Backup failover link)    |
+                  +-----------------------------------------+
+```
+
+**The Production Lane (StrongSwan IPsec)**: This represents standard corporate traffic. It runs over the public WAN IPs across AS 300. When the rogue AS 666 eventually hijacks the BGP prefixes in Milestone 3, this IPsec tunnel will get disrupted or intercepted.
+
+**The Remediation Lane (WireGuard)**: This is your out-of-band "emergency lane." It stays dormant until your Go daemon (which you'll build later) detects the hijack via eBPF and forces traffic onto it.
+
+1. Start StrongSwan inside routers:
+```bash
+# Start StrongSwan on Main
+docker exec -it router-main-as100 ipsec start
+
+# Start StrongSwan on Branch
+docker exec -it router-branch-as200 ipsec start
+```
+
+2. Verify connection:
+```bash
+docker exec -it router-main-as100 ipsec status
+```
+

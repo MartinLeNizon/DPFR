@@ -1,0 +1,15 @@
+FROM frrouting/frr:v8.4.0
+
+RUN apk update && \
+	echo "@edge https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
+	apk add --no-cache \
+	strongswan \
+	wireguard-tools \
+	iproute2 \
+	iptables && \
+	apk add --no-cache wireguard-go@edge
+
+COPY entrypoint.sh /bin/entrypoint.sh
+RUN chmod +x /bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
