@@ -91,16 +91,7 @@ docker-compose down
 
 **The Remediation Lane (WireGuard)**: This is your out-of-band "emergency lane." It stays dormant until your Go daemon (which you'll build later) detects the hijack via eBPF and forces traffic onto it.
 
-1. Start StrongSwan inside routers:
-```bash
-# Start StrongSwan on Main
-docker exec -it router-main-as100 ipsec start
-
-# Start StrongSwan on Branch
-docker exec -it router-branch-as200 ipsec start
-```
-
-2. Verify connection:
+1. Verify StrongSwan connection:
 ```bash
 docker exec -it router-main-as100 ipsec status
 ```

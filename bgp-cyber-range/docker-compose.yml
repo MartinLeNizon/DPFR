@@ -24,6 +24,7 @@ services:
       - ./config/main-as100/frr:/etc/frr
       - ./config/main-as100/ipsec/ipsec.conf:/etc/ipsec.conf
       - ./config/main-as100/ipsec/ipsec.secrets:/etc/ipsec.secrets
+      - ./config/main-as100/wg/wg0.conf:/etc/wireguard/wg0.conf
       # - /lib/modules:/lib/modules:ro  # required for wireguard
     networks:
       wan-main-transit:
@@ -53,6 +54,7 @@ services:
       - ./config/branch-as200/frr:/etc/frr
       - ./config/branch-as200/ipsec/ipsec.conf:/etc/ipsec.conf
       - ./config/branch-as200/ipsec/ipsec.secrets:/etc/ipsec.secrets
+      - ./config/branch-as200/wg/wg0.conf:/etc/wireguard/wg0.conf
       # - /lib/modules:/lib/modules:ro  # required for wireguard
     networks:
       wan-transit-branch:
