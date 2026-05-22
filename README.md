@@ -4,6 +4,10 @@ The goal is to build an isolated, multi-Autonomous System (AS) cyber range. With
 
 # Milestone 1
 
+```bash
+cd bgp-cyber-range
+```
+
 This configuration establishes a containerized, multi-AS virtual internet topology using Docker Compose and FRRouting (FRR) to simulate an enterprise core network, a remote branch, a legitimate transit ISP, and an adversarial network. By establishing authentic eBGP peerings over isolated Layer 2 subnets, it builds an operational data plane capable of exchanging traffic via deterministic, multi-hop AS paths, providing a clean baseline environment for analyzing BGP path routing variations.
 
 ## Multi-Autonomous System (AS) Cyber Range
@@ -14,7 +18,7 @@ This configuration establishes a containerized, multi-AS virtual internet topolo
 * AS 666: Rogue ISP
 
 | AS | Role                  | Configured Subnet(s)                     | Router ID  |
-|-------------------|-----------------------|------------------------------------------|------------|
+|-|-|-|-|
 | AS 100 | Main | 192.168.10.0/24 (Internal), 10.100.30.0/24 (WAN to ISP), 10.166.60.0/24 (WAN to Rogue) | 1.1.1.1 |
 | AS 200 | Remote Branch | 192.168.20.0/24 (Internal), 10.200.30.0/24 (WAN to ISP) | 2.2.2.2 |
 | AS 300 | Transit ISP | 10.100.30.0/24, 10.200.30.0/24            | 3.3.3.3 |
@@ -24,9 +28,13 @@ This configuration establishes a containerized, multi-AS virtual internet topolo
 
 1. Bring the Infrastructure Online: Deploy the network segments, initialize the routing nodes, and establish the eBGP handshakes
 
+(If using `podman`, run `systemctl --user enable --now podman.socket` so that `docker-compose` work)
+
 ```bash
 docker-compose up -d
 ```
+
+(If using `podman`, run `podman exec -it router-transit-as300 sysctl -w net.ipv4.ip_forward=1` )
 
 2. Verify Control Plane Status: Ensure the Main Office has formed valid peering relationships with both providers and has integrated the path to the Remote Branch into its routing table
 
