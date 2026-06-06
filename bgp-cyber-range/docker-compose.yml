@@ -44,6 +44,9 @@ services:
       wan-transit-branch:
         ipv4_address: 10.200.30.3
     privileged: true
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.forwarding=1
 
   router-branch-as200:
     build:

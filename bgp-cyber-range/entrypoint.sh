@@ -12,11 +12,17 @@ ip link add dev wg0 type wireguard
 wg setconf wg0 /etc/wireguard/wg0.conf
 
 # 3. Assign tunnel IP defined in wg0.conf
-if [ "$(hostname)" = "router-main-as100" ]; then
+AS=$(grep -m1 "^router bgp" /etc/frr/frr.conf | awk '{print $3}')
+echo "Detected AS: $AS"
+if [ "$AS" = "100" ]; then
 	ip addr add 10.0.99.1/24 dev wg0
-elif [ "$(hostname)" = "router-branch-as200" ]; then
+	ip route add 10.200.30.0/24 via 10.100.30.3 && echo "Route to Branch WAN added" || echo "WARNING: route to Branch WAN failed"
+elif [ "$AS" = "200" ]; then
 	ip addr add 10.0.99.2/24 dev wg0
+	ip route add 10.100.30.0/24 via 10.200.30.3 && echo "Route to Main WAN added" || echo "WARNING: route to Main WAN failed"
 fi
+echo "Routing table at WireGuard startup:"
+ip route show
 
 # 4. Bring interface up
 ip link set up dev wg0
