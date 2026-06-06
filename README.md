@@ -24,6 +24,7 @@ This configuration establishes a containerized, multi-AS virtual internet topolo
 | AS 300 | Transit ISP | 10.100.30.0/24, 10.200.30.0/24            | 3.3.3.3 |
 | AS 666 | Rogue ISP   | 10.166.60.0/24                            | 6.6.6.6 |
 
+
 ## Usage
 
 1. Bring the Infrastructure Online: Deploy the network segments, initialize the routing nodes, and establish the eBGP handshakes
@@ -35,11 +36,11 @@ docker-compose build
 docker-compose up -d
 ```
 
-(If using `podman`, run: 
+<!-- (If using `podman`, run: 
 ```bash
 podman exec -it router-transit-as300 sysctl -w net.ipv4.ip_forward=1
 ```
-)
+) -->
 
 2. Verify Control Plane Status: Ensure the Main Office has formed valid peering relationships with both providers and has integrated the path to the Remote Branch into its routing table
 
@@ -96,3 +97,11 @@ docker-compose down
 docker exec -it router-main-as100 ipsec status
 ```
 
+### Routers
+
+| Role    | Internal     | Main WAN/ISP | Remote WAN/ISP | Rogue WAN | Wireguard
+|-|-|-|-|-|-|
+| Main    | 192.168.10.1 | 10.100.30.2 |             | 10.166.60.2  | 10.0.99.1 |
+| Branch  | 192.168.20.2 |             | 10.200.30.2 |              | 10.0.99.2 |
+| Transit |              | 10.100.30.3 | 10.200.30.3 |              | |
+| Rogue   |              |             |             | 10.166.60.66 | |
