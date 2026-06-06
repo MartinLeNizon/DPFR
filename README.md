@@ -70,7 +70,7 @@ docker-compose down
 # Milestone 2
 
 ```
-+-----------------------------------------+
+                  +-----------------------------------------+
                   |         [Production Lane] IKEv2 IPsec    |
                   |     (Routed normally over Transit AS300) |
                   +-----------------------------------------+

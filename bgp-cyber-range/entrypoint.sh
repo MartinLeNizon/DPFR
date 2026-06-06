@@ -21,7 +21,6 @@ fi
 # 4. Bring interface up
 ip link set up dev wg0
 
-
 # Execute original FRR entrypoint
 echo "Launching FRR..."
 exec /usr/lib/frr/docker-start
