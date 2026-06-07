@@ -102,6 +102,6 @@ docker exec -it router-main-as100 ipsec status
 | Role    | Internal     | Main WAN/ISP | Remote WAN/ISP | Rogue WAN | Wireguard
 |-|-|-|-|-|-|
 | Main    | 192.168.10.1 | 10.100.30.2 |             | 10.166.60.2  | 10.0.99.1 |
-| Branch  | 192.168.20.2 |             | 10.200.30.2 |              | 10.0.99.2 |
+| Branch  | 192.168.20.1 |             | 10.200.30.2 |              | 10.0.99.2 |
 | Transit |              | 10.100.30.3 | 10.200.30.3 |              | |
 | Rogue   |              |             |             | 10.166.60.66 | |

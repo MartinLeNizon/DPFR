@@ -6,7 +6,9 @@ RUN apk update && \
 	strongswan \
 	wireguard-tools \
 	iproute2 \
-	iptables && \
+	iptables \
+	curl \
+	netcat-openbsd && \
 	apk add --no-cache wireguard-go@edge
 
 COPY entrypoint.sh /bin/entrypoint.sh

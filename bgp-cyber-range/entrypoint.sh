@@ -17,9 +17,13 @@ echo "Detected AS: $AS"
 if [ "$AS" = "100" ]; then
 	ip addr add 10.0.99.1/24 dev wg0
 	ip route add 10.200.30.0/24 via 10.100.30.3 && echo "Route to Branch WAN added" || echo "WARNING: route to Branch WAN failed"
+	chmod +x /usr/local/bin/traffic-receiver.sh
+	/usr/local/bin/traffic-receiver.sh &
 elif [ "$AS" = "200" ]; then
 	ip addr add 10.0.99.2/24 dev wg0
 	ip route add 10.100.30.0/24 via 10.200.30.3 && echo "Route to Main WAN added" || echo "WARNING: route to Main WAN failed"
+	chmod +x /usr/local/bin/traffic-sender.sh
+	/usr/local/bin/traffic-sender.sh &
 fi
 echo "Routing table at WireGuard startup:"
 ip route show
