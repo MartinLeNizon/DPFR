@@ -72,7 +72,7 @@ class TestDataPlane:
         )
 
     def test_traffic_routes_through_transit(self, main):
-        out = main("traceroute", "-n", "-s", "192.168.10.1", "192.168.20.1")
-        assert "10.100.30.3" in out, (
-            "Traffic does not route through Transit (10.100.30.3)\n" + out
+        out = main("ip", "route", "get", "192.168.20.1")
+        assert "via 10.100.30.3" in out, (
+            "Kernel routing table does not route 192.168.20.1 through Transit (10.100.30.3)\n" + out
         )
