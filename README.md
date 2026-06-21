@@ -151,6 +151,153 @@ docker exec -it router-transit-as300 tcpdump -ni any 'esp or udp port 51820'
 
 # Milestone 3
 
+From `transit`:
+
+```
+bash-5.1# tcpdump -v "port 8080"
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+13:45:39.883877 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+    192.168.10.1.8080 > 192.168.20.1.36592: Flags [S.], cksum 0x6bc4 (correct), seq 2216465947, ack 3714233579, win 65468, options [mss 65480,sackOK,TS val 3667170452 ecr 481778716,nop,wscale 10], length 0
+13:45:39.884032 IP (tos 0x0, ttl 64, id 19746, offset 0, flags [DF], proto TCP (6), length 52)
+    192.168.10.1.8080 > 192.168.20.1.36592: Flags [.], cksum 0x938e (correct), ack 152, win 64, options [nop,nop,TS val 3667170452 ecr 481778716], length 0
+13:45:39.884075 IP (tos 0x0, ttl 64, id 19747, offset 0, flags [DF], proto TCP (6), length 111)
+    192.168.10.1.8080 > 192.168.20.1.36592: Flags [P.], cksum 0x24d2 (correct), seq 1:60, ack 152, win 64, options [nop,nop,TS val 3667170452 ecr 481778716], length 59: HTTP, length: 59
+	HTTP/1.1 200 OK
+	Content-Length: 2
+	Connection: close
+	
+	OK [|http]
+```
+
+TTL=64
+
+```
+$ docker exec -it router-main-as100 vtysh -c "show ip bgp"
+Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+BGP table version is 2, local router ID is 1.1.1.1, vrf id 0
+Default local pref 100, local AS 100
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 192.168.10.0/24  0.0.0.0                  0         32768 i
+*> 192.168.20.0/24  10.100.30.3                            0 300 200 i
+
+Displayed  2 routes and 2 total paths
+
+
+
+
+$ docker exec -it router-branch-as200 vtysh -c "show ip bgp"
+Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+BGP table version is 2, local router ID is 2.2.2.2, vrf id 0
+Default local pref 100, local AS 200
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 192.168.10.0/24  10.200.30.3                            0 300 100 i
+*> 192.168.20.0/24  0.0.0.0                  0         32768 i
+
+Displayed  2 routes and 2 total paths
+
+
+
+
+$ docker exec -it router-transit-as300 vtysh -c "show ip bgp"
+Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+BGP table version is 2, local router ID is 3.3.3.3, vrf id 0
+Default local pref 100, local AS 300
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 192.168.10.0/24  10.100.30.2              0             0 100 i
+*> 192.168.20.0/24  10.200.30.2              0             0 200 i
+
+Displayed  2 routes and 2 total paths
+
+
+
+
+
+
+
+$ docker exec -it router-main-as100 vtysh -c "show ip route"
+Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+Codes: K - kernel route, C - connected, S - static, R - RIP,
+       O - OSPF, I - IS-IS, B - BGP, E - EIGRP, N - NHRP,
+       T - Table, v - VNC, V - VNC-Direct, A - Babel, F - PBR,
+       f - OpenFabric,
+       > - selected route, * - FIB route, q - queued, r - rejected, b - backup
+       t - trapped, o - offload failure
+
+K>* 0.0.0.0/0 [0/100] via 10.100.30.1, eth1, 00:09:51
+C>* 10.0.99.0/24 is directly connected, wg0, 00:09:51
+C>* 10.100.30.0/24 is directly connected, eth1, 00:09:51
+C>* 10.166.60.0/24 is directly connected, eth0, 00:09:51
+S   10.200.30.0/24 [1/0] via 10.100.30.3, eth1, weight 1, 00:09:50
+K>* 10.200.30.0/24 [0/0] via 10.100.30.3, eth1, 00:09:51
+C>* 192.168.10.0/24 is directly connected, lo, 00:09:51
+B>* 192.168.20.0/24 [20/0] via 10.100.30.3, eth1, weight 1, 00:09:49
+
+
+$ docker exec -it router-branch-as200 vtysh -c "show ip route"
+Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+Codes: K - kernel route, C - connected, S - static, R - RIP,
+       O - OSPF, I - IS-IS, B - BGP, E - EIGRP, N - NHRP,
+       T - Table, v - VNC, V - VNC-Direct, A - Babel, F - PBR,
+       f - OpenFabric,
+       > - selected route, * - FIB route, q - queued, r - rejected, b - backup
+       t - trapped, o - offload failure
+
+K>* 0.0.0.0/0 [0/100] via 10.200.30.1, eth0, 00:10:11
+C>* 10.0.99.0/24 is directly connected, wg0, 00:10:11
+S   10.100.30.0/24 [1/0] via 10.200.30.3, eth0, weight 1, 00:10:10
+K>* 10.100.30.0/24 [0/0] via 10.200.30.3, eth0, 00:10:11
+C>* 10.200.30.0/24 is directly connected, eth0, 00:10:11
+B>* 192.168.10.0/24 [20/0] via 10.200.30.3, eth0, weight 1, 00:10:09
+C>* 192.168.20.0/24 is directly connected, lo, 00:10:11
+
+
+$ docker exec -it router-transit-as300 vtysh -c "show ip route"
+Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+Codes: K - kernel route, C - connected, S - static, R - RIP,
+       O - OSPF, I - IS-IS, B - BGP, E - EIGRP, N - NHRP,
+       T - Table, v - VNC, V - VNC-Direct, A - Babel, F - PBR,
+       f - OpenFabric,
+       > - selected route, * - FIB route, q - queued, r - rejected, b - backup
+       t - trapped, o - offload failure
+
+K>* 0.0.0.0/0 [0/100] via 10.200.30.1, eth1, 00:10:16
+C>* 10.100.30.0/24 is directly connected, eth0, 00:10:16
+C>* 10.200.30.0/24 is directly connected, eth1, 00:10:16
+B>* 192.168.10.0/24 [20/0] via 10.100.30.2, eth0, weight 1, 00:10:14
+B>* 192.168.20.0/24 [20/0] via 10.200.30.2, eth1, weight 1, 00:10:14
+
+
+
+
+```
+
+
+
+
 
 
 # Testing

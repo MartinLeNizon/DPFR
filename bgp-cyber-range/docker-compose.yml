@@ -18,7 +18,7 @@ services:
   router-main-as100:
     build:
       context: .
-      dockerfile: Dockerfile.router
+      dockerfile: Dockerfile.main
     container_name: router-main-as100
     volumes:
       - ./config/main-as100/frr:/etc/frr
@@ -52,7 +52,7 @@ services:
   router-branch-as200:
     build:
       context: .
-      dockerfile: Dockerfile.router
+      dockerfile: Dockerfile.branch
     container_name: router-branch-as200
     volumes:
       - ./config/branch-as200/frr:/etc/frr
